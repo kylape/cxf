@@ -55,6 +55,27 @@ public class SchemaImportTest extends AbstractBusClientServerTestBase {
     }
 
     @Test
+    public void testNestedImport() throws Exception {
+        String schemaURL = "http://localhost:" + PORT + "/schemaimport/sayHi" + "?xsd=sayhi/sayhi-schema1.xsd";
+        URL url = new URL(schemaURL);
+        InputStream ins = null;
+        try {
+            ins = url.openStream();
+            String output = IOUtils.toString(ins);
+            //sayhi/sayhi-schema1.xsd should refer to sayhi/sayhi/sayhi-schema1.xsd
+            System.out.println(output);
+            assertTrue(output.indexOf("sayhi/sayhi/sayhi-schema1.xsd") > -1);
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("Can not access the import schema");
+        } finally {
+            if (ins != null) {
+                ins.close();
+            }
+        }
+    }
+
+    @Test
     public void testImportWsdl() throws Exception {
         String wsdlURL = "http://localhost:" + PORT + "/schemaimport/sayHi"  + "?wsdl=sayhi/sayhi/a.wsdl";
         URL url = new URL(wsdlURL);
@@ -73,8 +94,7 @@ public class SchemaImportTest extends AbstractBusClientServerTestBase {
             }
         }
     }
-    
-    
+
     @Test
     public void testAnotherSchemaImportl() throws Exception {
         String schemaURL = "http://localhost:" + PORT + "/schemaimport/service"  + "?xsd=schema1.xsd";
