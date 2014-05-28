@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.LogRecord;
 
 import org.apache.cxf.common.classloader.ClassLoaderUtils;
 import org.apache.cxf.common.logging.LogUtils;
@@ -126,6 +127,7 @@ public abstract class BusFactory {
      */
     public static void setThreadDefaultBus(Bus bus) {
         Thread cur = Thread.currentThread();
+        debugThreadBus("Associating bus [" + bus + "] with thread [" + cur.getName() + "].");
         synchronized (threadBusses) {
             threadBusses.put(cur, bus);
         }
@@ -165,6 +167,7 @@ public abstract class BusFactory {
         }
         if (threadBus == null) {
             threadBus = getDefaultBus(true);
+            debugThreadBus("Associating bus [" + threadBus + "] with thread [" + cur.getName() + "].");
             threadBusses.put(cur, threadBus);
         }
         return threadBus;
@@ -184,6 +187,7 @@ public abstract class BusFactory {
                 iterator.hasNext();) {
                 Bus itBus = iterator.next();
                 if (bus == null || itBus == null || bus.equals(itBus)) {
+                    debugThreadBus("DIS-associating bus [" + itBus + "] with thread [?].");
                     iterator.remove();
                 }
             }
@@ -200,6 +204,7 @@ public abstract class BusFactory {
         Thread cur = Thread.currentThread();
         synchronized (threadBusses) {
             if (threadBusses.get(cur) == null) {
+                debugThreadBus("Associating bus [" + bus + "] with thread [" + cur.getName() + "].");
                 threadBusses.put(cur, bus);
             }
         }
@@ -330,6 +335,12 @@ public abstract class BusFactory {
 
     private static boolean isValidBusFactoryClass(String busFactoryClassName) {
         return busFactoryClassName != null && !"".equals(busFactoryClassName);
+    }
+
+    private static void debugThreadBus(String message) {
+      LogRecord record = new LogRecord(Level.WARNING, message);
+      record.setThrown(new Exception("BusFactory debugging stack"));
+      LOG.log(record);
     }
 
 }
